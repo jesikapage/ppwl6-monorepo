@@ -1,35 +1,45 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import type { ApiResponse, HealthCheck } from "shared";
-
+import type { ApiResponse, User } from "shared"; // Ganti HealthCheck jadi User
 
 function App() {
-  const [response, setResponse] = useState<string>("")
+  // Kita simpan array user ke dalam state
+  const [users, setUsers] = useState<User[]>([])
+  const [message, setMessage] = useState<string>("")
 
   const handleClick = async () => {
     try {
-      const res = await fetch("http://localhost:3000")
-      const data: ApiResponse<HealthCheck> = await res.json()
-      setResponse(data.data.status)
+      // 1. Panggil endpoint /users
+      const res = await fetch("http://localhost:3000/users")
+      const result: ApiResponse<User[]> = await res.json()
+      
+      // 2. Simpan data ke state
+      setUsers(result.data)
+      setMessage(result.message)
     
     } catch (error) {
       console.error(error)
-      setResponse("Error connecting to server")
+      setMessage("Error connecting to server")
     }
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-      
       <Button onClick={handleClick}>
-        Get Response
+        Get Users
       </Button>
 
       <div className="p-4 border rounded w-96">
-        <b>Server Response:</b>
-        <p>{response}</p>
+        <p><b>Status:</b> {message}</p>
+        <hr className="my-2"/>
+        <ul>
+          {users.map((user) => (
+            <li key={user.id} className="py-1">
+              {user.name} - <span className="text-gray-500 text-sm">{user.email}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-
     </div>
   )
 }
